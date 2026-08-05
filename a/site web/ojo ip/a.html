@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andy Axcel's HD Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .main-card {
+      width: 100%;
+      max-width: 1000px;
+      background: #181818;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      border: 1px solid #2a2a2a;
+      transition: all 0.3s ease;
+    }
+
+    .main-card.cinema-mode {
+      max-width: 98vw;
+      width: 98vw;
+      padding: 10px;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #282828;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ff0000;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-status {
+      font-size: 12px;
+      color: #25d366;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #25d366;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #25d366;
+    }
+
+    /* REPRODUCTOR TIPO YOUTUBE */
+    .player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.9);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* BARRA DE CONTROLES PERSONALIZADA */
+    .custom-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.9));
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .player-container:hover .custom-controls {
+      opacity: 1;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-ctrl {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .btn-ctrl:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .badge-live {
+      background: #ff0000;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 1px;
+    }
+
+    /* GRID DE CANALES CON CARÁTULAS */
+    .grid-channels {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .card-channel {
+      background: #212121;
+      border: 1px solid #303030;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .card-channel:hover {
+      background: #2a2a2a;
+      border-color: #ff0000;
+      transform: translateY(-2px);
+    }
+
+    .card-channel.active {
+      background: #ff0000;
+      border-color: #ff3333;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+    }
+
+    .card-channel img {
+      width: 100%;
+      height: 70px;
+      object-fit: contain;
+      background: #121212;
+      border-radius: 5px;
+      padding: 5px;
+    }
+
+    .card-channel span {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* FOOTER Y COMPARTIR */
+    .share-box {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid #282828;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-share {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-share:hover { background: #444; }
+  </style>
+</head>
+<body>
+
+  <div class="main-card" id="card">
+    <div class="header">
+      <div class="brand">
+        <img src="and.png" alt="Andy Axcel" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+        <div>
+          <div class="brand-title" id="now-playing">Andy Axcel's Player</div>
+          <div class="brand-status"><span class="status-dot"></span> Señal en vivo estable</div>
+        </div>
+      </div>
+      <button class="btn-ctrl" style="background:#333;" onclick="toggleCinema()">🖥️ Modo Cine</button>
+    </div>
+
+    <!-- REPRODUCTOR -->
+    <div class="player-container">
+      <video id="video-player" autoplay muted playsinline></video>
+      <div class="custom-controls">
+        <div class="ctrl-group">
+          <button class="btn-ctrl" onclick="togglePlay()" id="btn-play">▶ Pausa</button>
+          <span class="badge-live">LIVESTREAM HD</span>
+        </div>
+        <div class="ctrl-group">
+          <button class="btn-ctrl" onclick="toggleMute()" id="btn-mute">🔇 Sin Sonido</button>
+          <button class="btn-ctrl" onclick="toggleFullscreen()">⛶ Pantalla Completa</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRILLA DE CANALES -->
+    <div class="grid-channels" id="channel-grid"></div>
+
+    <!-- COMPARTIR -->
+    <div class="share-box">
+      <span style="font-size: 12px; color: #aaa;">Compartir la transmisión:</span>
+      <div>
+        <button class="btn-share" onclick="copyLink()">📋 Copiar Link</button>
+        <a id="share-wa" target="_blank" class="btn-share" style="background:#25d366;">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- ESCUDO ANTI-DEVTOOLS & ATAYOS ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // --- LISTA DE CANALES CON BASE64 Y LOGOS WEB ---
+    const _CHANNELS = [
+      {
+        name: "LIGA 1 MAX",
+        logo: "https://cdn-icons-png.flaticon.com/512/53/53283.png",
+        url: "aHR0cDovLzE5MC45My4yMjQuNDIvTElHQS0xLU1BWC9pbmRleC5tM3U4"
+      },
+      {
+        name: "GoUSA TV HD",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/320px-Flag_of_the_United_States.svg.png",
+        url: "aHR0cHM6Ly9icmFuZHVzYS1nb3VzYS0xLXB0LnNhbXN1bmcud3VybC50di9wbGF5bGlzdC5tM3U4"
+      },
+      {
+        name: "ATV PERÚ HD",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/ATV_Per%C3%BA_logo.png/320px-ATV_Per%C3%BA_logo.png",
+        url: "aHR0cHM6Ly9kMmI1aDV3eWl2Zm5mbC5jbG91ZGZyb250Lm5ldC9saXZlLzI1MDQ2NDExLTg2NzMtNGRlYy04YWU4LTViNDE5ODRmMzRlMS90czphYnIubTN1OA=="
+      },
+      {
+        name: "LATINA TELEVISIÓN",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Latina_Televisi%C3%B3n_logo_2019.svg/320px-Latina_Televisi%C3%B3n_logo_2019.svg.png",
+        url: "aHR0cHM6Ly9saXZlLWxhdGluYS1pbnRlcm5hdGlvbmFsLm1lZGlhdnJvY2suY29tL2hscy9saXZlL3BsYXlsaXN0Lm0zdTg="
+      }
+    ];
+
+    const _PROXY = "proxy.php?url=";
+    let _hls = null;
+    const _video = document.getElementById('video-player');
+
+    // Renderizar tarjetas de canal
+    const grid = document.getElementById('channel-grid');
+    _CHANNELS.forEach((ch, idx) => {
+      const card = document.createElement('div');
+      card.className = `card-channel ${idx === 0 ? 'active' : ''}`;
+      card.onclick = () => loadChannel(idx);
+      card.innerHTML = `<img src="${ch.logo}" alt="Logo"><span>${ch.name}</span>`;
+      grid.appendChild(card);
+    });
+
+    function loadChannel(idx) {
+      const ch = _CHANNELS[idx];
+      document.getElementById('now-playing').textContent = "Andy Axcel - " + ch.name;
+      
+      document.querySelectorAll('.card-channel').forEach((c, i) => {
+        c.classList.toggle('active', i === idx);
+      });
+
+      const targetUrl = _PROXY + encodeURIComponent(atob(ch.url));
+
+      if (Hls.isSupported()) {
+        if (_hls) { _hls.destroy(); }
+        
+        // CONFIGURACIÓN ANTI-ROTURA (SISTEMA AUTO-REINTENTO)
+        _hls = new Hls({
+          manifestLoadingTimeOut: 20000,
+          manifestLoadingMaxRetry: 10,
+          levelLoadingMaxRetry: 10,
+          fragLoadingMaxRetry: 10
+        });
+
+        _hls.loadSource(targetUrl);
+        _hls.attachMedia(_video);
+
+        // Si hay error de red, reintenta automáticamente sin tumbar el reproductor
+        _hls.on(Hls.Events.ERROR, function(event, data) {
+          if (data.fatal) {
+            switch(data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                _hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                _hls.recoverMediaError();
+                break;
+              default:
+                _hls.destroy();
+                loadChannel(idx);
+                break;
+            }
+          }
+        });
+
+        _hls.on(Hls.Events.MANIFEST_PARSED, () => _video.play().catch(() => {}));
+      } else if (_video.canPlayType('application/vnd.apple.mpegurl')) {
+        _video.src = targetUrl;
+        _video.play().catch(() => {});
+      }
+    }
+
+    // MANDOS DEL REPRODUCTOR
+    function togglePlay() {
+      if (_video.paused) { _video.play(); document.getElementById('btn-play').textContent = "▶ Pausa"; }
+      else { _video.pause(); document.getElementById('btn-play').textContent = "► Reproducir"; }
+    }
+
+    function toggleMute() {
+      _video.muted = !_video.muted;
+      document.getElementById('btn-mute').textContent = _video.muted ? "🔇 Sin Sonido" : "🔊 Con Sonido";
+    }
+
+    function toggleFullscreen() {
+      if (!_video.fullscreenElement) { _video.requestFullscreen().catch(() => {}); }
+      else { document.exitFullscreen(); }
+    }
+
+    function toggleCinema() {
+      document.getElementById('card').classList.toggle('cinema-mode');
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href);
+      alert("¡Enlace copiado exitosamente!");
+    }
+
+    document.getElementById('share-wa').href = `https://api.whatsapp.com/send?text=${encodeURIComponent("Mira la TV HD en vivo aquí: " + window.location.href)}`;
+
+    // Cargar canal 0 al iniciar
+    loadChannel(0);
+  </script>
+</body>
+</html>
