@@ -1,0 +1,10 @@
+public_html/
+├── auth.php              <-- Registra y loguea (Conexión incluida)
+├── get-channels.php      <-- Entrega lista de canales (Conexión incluida)
+├── stream.php            <-- Protege y reproduce las transmisiones (Conexión incluida)
+├── stripe-webhook.php    <-- Activa pagos automáticos
+├── index.php             <-- Redirige según idioma
+├── login-es.html         <-- Formulario Español
+├── login-en.html         <-- Formulario Inglés
+├── index-es.html         <-- Reproductor HTML5
+└── yape-qr.png           <-- Imagen QR Yape

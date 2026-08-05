@@ -1,0 +1,11 @@
+[ Cliente / Reproductor HTML ]
+              │
+              │  Pide: stream.php?id=15 (No conoce la URL real)
+              ▼
+    [ Servidor PHP (stream.php) ]
+              │
+              ├── 1. Valida que el usuario tenga sesión en MySQL
+              ├── 2. Consulta la URL real de id=15 en la BD
+              └── 3. Redirige o transmite el flujo
+              ▼
+    [ Transmisión Original .m3u8 ]

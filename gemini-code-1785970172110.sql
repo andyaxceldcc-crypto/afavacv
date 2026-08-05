@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(150) NOT NULL UNIQUE,
+  `phone` VARCHAR(25) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `method` ENUM('stripe', 'yape') NOT NULL DEFAULT 'yape',
+  `lang` VARCHAR(5) NOT NULL DEFAULT 'es',
+  `payment_ref` VARCHAR(100) DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

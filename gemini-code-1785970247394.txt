@@ -1,0 +1,11 @@
+public_html/
+├── config/
+│   └── base.php           <-- Conexión centralizada a la Base de Datos
+├── api/
+│   ├── auth.php           <-- Login y Registro
+│   ├── get-channels.php   <-- Lista de canales
+│   └── proxy.php          <-- Proxy/Ocultador de enlaces de video m3u8
+├── assets/
+│   └── yape-qr.png        <-- Código QR para pagos por Yape
+├── index-es.html          <-- Interfaz en español
+└── index-en.html          <-- Interfaz en inglés

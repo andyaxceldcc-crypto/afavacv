@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Plataforma VIP - Ojo IP</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body { background: #111; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #e50914; }
+    select { width: 100%; padding: 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 5px; font-size: 16px; margin-bottom: 15px; }
+    video { width: 100%; background: #000; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📺 Ojo IP - Transmisiones VIP</h1>
+
+  <select id="channelSelect" onchange="playChannel(this.value)">
+    <option value="">Cargando catálogo...</option>
+  </select>
+
+  <video id="videoPlayer" controls autoplay playsinline></video>
+</div>
+
+<script>
+  let hls;
+  const video = document.getElementById('videoPlayer');
+
+  // Comprobar sesión activa
+  fetch('api/auth.php?action=check')
+    .then(r => r.json())
+    .then(d => {
+      if(!d.logged) window.location.href = 'login-es.html';
+      else loadChannels();
+    });
+
+  // Cargar canales
+  function loadChannels() {
+    fetch('api/get-channels.php')
+      .then(r => r.json())
+      .then(d => {
+        if(d.success && d.channels.length > 0) {
+          const select = document.getElementById('channelSelect');
+          select.innerHTML = '';
+
+          d.channels.forEach(ch => {
+            const opt = document.createElement('option');
+            opt.value = `api/proxy.php?id=${ch.id}`;
+            opt.textContent = `[${ch.category}] ${ch.title}`;
+            select.appendChild(opt);
+          });
+
+          playChannel(`api/proxy.php?id=${d.channels[0].id}`);
+        }
+      });
+  }
+
+  function playChannel(proxyUrl) {
+    if(!proxyUrl) return;
+
+    if (Hls.isSupported()) {
+      if (hls) hls.destroy();
+      hls = new Hls();
+      hls.loadSource(proxyUrl);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = proxyUrl;
+    }
+  }
+</script>
+</body>
+</html>

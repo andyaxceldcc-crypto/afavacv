@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Transmisiones VIP</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
+    .player-container { max-width: 900px; margin: 0 auto; }
+    video { width: 100%; border-radius: 8px; background: #000; }
+    select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; border-radius: 5px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="player-container">
+  <h2>📺 Canales en Vivo VIP</h2>
+  
+  <!-- Buscador/Selector de transmisiones -->
+  <select id="channelSelect" onchange="playSelectedStream(this.value)">
+    <option value="">Cargando lista de transmisiones...</option>
+  </select>
+
+  <!-- Reproductor HLS -->
+  <video id="video" controls autoplay playsinline></video>
+</div>
+
+<script>
+  let hls;
+  const video = document.getElementById('video');
+
+  // Verificar sesión al cargar
+  fetch('auth.php?action=check')
+    .then(r => r.json())
+    .then(d => { 
+      if(!d.logged) window.location.href = 'login-es.html'; 
+      else loadChannels();
+    });
+
+  // Obtener todos los enlaces de la base de datos
+  function loadChannels() {
+    fetch('get-channels.php')
+      .then(r => r.json())
+      .then(d => {
+        if(d.success && d.channels.length > 0) {
+          const select = document.getElementById('channelSelect');
+          select.innerHTML = '';
+          
+          d.channels.forEach(ch => {
+            const opt = document.createElement('option');
+            opt.value = ch.stream_url;
+            opt.textContent = `[${ch.category}] ${ch.title}`;
+            select.appendChild(opt);
+          });
+
+          // Reproducir el primer canal automáticamente
+          playSelectedStream(d.channels[0].stream_url);
+        }
+      });
+  }
+
+  // Función para reproducir el manifest.m3u8 seleccionado
+  function playSelectedStream(url) {
+    if(!url) return;
+    
+    if (Hls.isSupported()) {
+      if (hls) hls.destroy();
+      hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Para Safari e iOS
+      video.src = url;
+    }
+  }
+</script>
+
+</body>
+</html>

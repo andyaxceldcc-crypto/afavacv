@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Acceso VIP - Ojo IP</title>
+  <style>
+    body { background: #141414; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #222; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    h2 { color: #e50914; margin-top: 0; }
+    input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
+    button { background: #e50914; border: none; font-weight: bold; cursor: pointer; }
+    .hidden { display: none; }
+    .toggle { font-size: 12px; color: #aaa; text-align: center; cursor: pointer; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <!-- INICIO DE SESIÓN -->
+  <div id="login-box">
+    <h2>Iniciar Sesión</h2>
+    <input type="email" id="login-email" placeholder="Correo electrónico">
+    <input type="password" id="login-pass" placeholder="Contraseña">
+    <button onclick="login()">Entrar</button>
+    <div class="toggle" onclick="toggleForm()">¿No tienes cuenta? Regístrate aquí</div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div id="register-box" class="hidden">
+    <h2>Crear Cuenta VIP</h2>
+    <input type="email" id="reg-email" placeholder="Correo electrónico">
+    <input type="text" id="reg-phone" placeholder="Celular / WhatsApp">
+    <input type="password" id="reg-pass" placeholder="Contraseña">
+    <input type="password" id="reg-pass2" placeholder="Confirmar Contraseña">
+    
+    <select id="reg-method" onchange="toggleYape()">
+      <option value="yape">Yape (S/ 15.00)</option>
+      <option value="stripe">Tarjeta de Crédito/Débito</option>
+    </select>
+
+    <div id="yape-info">
+      <p style="font-size:12px; color:#aaa;">Escanea el QR y coloca el número de operación:</p>
+      <img src="assets/yape-qr.png" style="width:100%; border-radius:5px;" alt="QR Yape">
+      <input type="text" id="reg-ref" placeholder="N° de Operación Yape">
+    </div>
+
+    <button onclick="register()">Registrar e Iniciar</button>
+    <div class="toggle" onclick="toggleForm()">¿Ya tienes cuenta? Inicia sesión</div>
+  </div>
+</div>
+
+<script>
+  function toggleForm() {
+    document.getElementById('login-box').classList.toggle('hidden');
+    document.getElementById('register-box').classList.toggle('hidden');
+  }
+
+  function toggleYape() {
+    const method = document.getElementById('reg-method').value;
+    document.getElementById('yape-info').style.display = (method === 'yape') ? 'block' : 'none';
+  }
+
+  function login() {
+    fetch('api/auth.php?action=login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: document.getElementById('login-email').value,
+        password: document.getElementById('login-pass').value
+      })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if(d.success) window.location.href = d.redirect;
+      else alert(d.message);
+    });
+  }
+
+  function register() {
+    fetch('api/auth.php?action=register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: document.getElementById('reg-email').value,
+        phone: document.getElementById('reg-phone').value,
+        password: document.getElementById('reg-pass').value,
+        confirm_password: document.getElementById('reg-pass2').value,
+        method: document.getElementById('reg-method').value,
+        payment_ref: document.getElementById('reg-ref').value,
+        lang: 'es'
+      })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if(d.success) {
+        if(d.checkout_url) window.location.href = d.checkout_url;
+        else window.location.href = d.redirect;
+      } else {
+        alert(d.message);
+      }
+    });
+  }
+</script>
+</body>
+</html>

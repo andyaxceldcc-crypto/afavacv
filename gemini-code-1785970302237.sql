@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `channels` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `title` VARCHAR(150) NOT NULL,
+  `category` VARCHAR(50) DEFAULT 'General',
+  `stream_url` TEXT NOT NULL,
+  `logo_url` VARCHAR(255) NULL,
+  `active` TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

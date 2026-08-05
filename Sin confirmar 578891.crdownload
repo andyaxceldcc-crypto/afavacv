@@ -1,0 +1,21 @@
+function loadChannelsFromDB() {
+    fetch('get-channels.php')
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.channels.length > 0) {
+          const select = document.getElementById('channelSelect');
+          select.innerHTML = '';
+
+          res.channels.forEach(channel => {
+            const option = document.createElement('option');
+            // En lugar de enviar la URL m3u8, enviamos la URL protegida PHP
+            option.value = `stream.php?id=${channel.id}`;
+            option.textContent = `[${channel.category}] ${channel.title}`;
+            select.appendChild(option);
+          });
+
+          // Reproducir el primer canal
+          playChannel(`stream.php?id=${res.channels[0].id}`);
+        }
+      });
+  }

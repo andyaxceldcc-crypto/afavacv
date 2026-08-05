@@ -1,0 +1,11 @@
+public_html/
+├── 📄 base.php            <-- Configuras TUS DATOS de cPanel AQUÍ (Servidor, Base de datos, Usuario y Clave)
+├── 📄 auth.php            <-- Procesa Registro/Login
+├── 📄 get-channels.php    <-- Envía la lista de canales
+├── 📄 stream.php          <-- Oculta y reproduce los m3u8
+├── 📄 stripe-webhook.php  <-- Activa automáticamente pagos con tarjeta
+├── 📄 index.php           <-- Detecta idioma
+├── 📄 login-es.html       <-- Formulario Español (Yape/Stripe)
+├── 📄 login-en.html       <-- Formulario Inglés
+├── 📄 index-es.html       <-- Reproductor HTML
+└── 📄 yape-qr.png         <-- Tu foto QR de Yape
